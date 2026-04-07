@@ -21,7 +21,7 @@ public class Main extends Application {
 	public void start(Stage palco) {
 		VBox base = new VBox(10);
 		base.setPadding(new Insets(10));
-		TextField visor = new TextField("0");
+		TextField visor = new TextField(calculadora.getNumeroDigitado());
 		visor.setMaxWidth(Double.MAX_VALUE);
 		Scene cena = new Scene(base, 250, 400);
 		visor.setEditable(false);
@@ -31,7 +31,7 @@ public class Main extends Application {
 		
 		GridPane teclado = new GridPane();
 		teclado.add(visor, 0, 0, 4, 1);
-		configurarTeclado(teclado);
+		configurarTeclado(teclado, visor);
 		
 		base.getChildren().addAll(visor, teclado);
 		
@@ -64,7 +64,7 @@ public class Main extends Application {
 		}
 	}
 	
-	public void configurarTeclado(GridPane teclado) {
+	public void configurarTeclado(GridPane teclado, TextField visor) {
 		String[][] teclas = {
 				{"%","CE","C","Backspace"},
 				{"1/x", "x²", "²Vx", "/"},
@@ -81,17 +81,49 @@ public class Main extends Application {
 				botao.setOnAction(e -> {
 					String tecla = botao.getText();
 					switch (tecla) {
-						case "1","2","3","4","5","6","7","8","9","0","." -> calculadora.digitarNaTela(tecla);
-						case "+","-","*","/" -> calculadora.guardarOperacao(tecla);
-						case "+/-" -> calculadora.inverterSinal();
-						case "%" -> calculadora.converterEmPorcento();
-						case "CE" -> calculadora.limpar(false);
-						case "C" -> calculadora.limpar(true);
-						case "Backspace" -> calculadora.deletarNumero();
-						case "1/x" -> calculadora.operacoesBasicas(Double.parseDouble(calculadora.getNumeroDigitado()), 0, "n");
-						case "x²" -> calculadora.operacoesBasicas(Double.parseDouble(calculadora.getNumeroDigitado()), 0, "^");
-						case "²Vx" -> calculadora.operacoesBasicas(Double.parseDouble(calculadora.getNumeroDigitado()), 0, "V");
-						default -> calculadora.processarOperacao();
+						case "1","2","3","4","5","6","7","8","9","0","." : 
+							calculadora.digitarNaTela(tecla);
+							visor.setText(calculadora.getNumeroDigitado());
+							break;
+						case "+","-","*","/":
+							calculadora.guardarOperacao(tecla);
+							visor.setText(calculadora.getResultado());
+							break;
+						case "+/-":
+							calculadora.inverterSinal();
+							visor.setText(calculadora.getNumeroDigitado());
+							break;
+						case "%": 
+							calculadora.converterEmPorcento();
+							visor.setText(calculadora.getNumeroDigitado());
+							break;
+						case "CE": 
+							calculadora.limpar(false);
+							visor.setText(calculadora.getNumeroDigitado());
+							break;
+						case "C": 
+							calculadora.limpar(true);
+							visor.setText(calculadora.getNumeroDigitado());
+							break;
+						case "Backspace": 
+							calculadora.deletarNumero();
+							visor.setText(calculadora.getNumeroDigitado());
+							break;
+						case "1/x":
+							calculadora.inverterFracao();
+							visor.setText(calculadora.getNumeroDigitado());
+							break;
+						case "x²": 
+							calculadora.elevarAoQuadrado();
+							visor.setText(calculadora.getNumeroDigitado());
+							break;
+						case "²Vx": 
+							calculadora.raizQuadrada();
+							visor.setText(calculadora.getNumeroDigitado());
+							break;
+						default: 
+							calculadora.processarOperacao(true);
+							visor.setText(calculadora.getResultado());
 					}
 				});
 				
