@@ -9,8 +9,11 @@ public class Calculadora {
 	private double resultado = 0;
 	private String operacaoAtual = "";
 	private String numeroDigitado = "0";
+	private String historico = "";
 	private boolean podeDigitar = true;
-	private ArrayList<String> numeros = new ArrayList<>();
+	private boolean divisaoPorZero = false;
+	private double[] numeros = new double[2];
+	private int numAtual = 0;
 	
 	public <T extends Number> double operacoesBasicas(T a, T b, String operador) {
 		double resultado;
@@ -18,13 +21,18 @@ public class Calculadora {
 			case "+" -> resultado = a.doubleValue() + b.doubleValue();
 			case "-" -> resultado = a.doubleValue() - b.doubleValue();
 			case "*" -> resultado = a.doubleValue() * b.doubleValue();
-			case "/" -> resultado = b.doubleValue() != 0 ? a.doubleValue() / b.doubleValue() : 0;
-			case "^" -> resultado = Math.pow(a.doubleValue(), 2);
-			case "v" -> resultado = Math.sqrt(a.doubleValue());
-			case "n" -> resultado = 1 / a.doubleValue();
+			case "/" -> resultado = this.verificarDivPorZero(a.doubleValue(), b.doubleValue());
 			default -> resultado = 0;
 		};
 		return resultado;
+	}
+	
+	public double verificarDivPorZero (double a, double b) {
+		if (b == 0) {
+			this.divisaoPorZero = true;
+			return 0;
+		}
+		return a / b;
 	}
 	
 	public void elevarAoQuadrado() {
@@ -44,37 +52,50 @@ public class Calculadora {
 	
 	public void guardarNumero(String numero) {
 		numeroDigitado = numero;
-		numeros.add(numeroDigitado);
 	}
 	
 	public void guardarOperacao(String operacao) {
-		this.podeDigitar = !this.podeDigitar;
-		if (this.operacaoAtual.isEmpty()) {
-			resultado = Double.parseDouble(this.numeroDigitado);
+		this.podeDigitar = false;
+		this.numeros[this.numAtual] = Double.parseDouble(this.numeroDigitado);
+		if (this.numAtual == 0) {
+			this.numAtual = 1;
 		} else {
 			this.processarOperacao(false);
+			if (divisaoPorZero) return;
 		}
-		operacaoAtual = operacao;
+		this.operacaoAtual = operacao;
+		this.numeroDigitado = this.formatarNumero(this.numeros[0]);
+		this.historico = String.format("%s %s ", formatarNumero(this.numeros[0]), this.operacaoAtual);
 		System.out.println(operacaoAtual);
 	}
 	
-	public void processarOperacao(boolean limpar) {
-		double n1 = this.resultado;
-		double n2 = Double.parseDouble(this.numeroDigitado);
-		this.resultado = operacoesBasicas(n1, n2, this.operacaoAtual);
-		if (limpar) {
-			this.numeroDigitado = "0";
+	public void processarOperacao(boolean operacaoFinal) {
+		this.podeDigitar = false;
+		this.numeros[this.numAtual] = Double.parseDouble(this.numeroDigitado);
+		this.resultado = operacoesBasicas(this.numeros[0], this.numeros[1], this.operacaoAtual);
+		System.out.println(this.divisaoPorZero);
+		if (divisaoPorZero) {
+			this.limpar(true);
+			this.numeroDigitado = "Não é possível dividir por zero.";
+			return;
 		}
+		if (!operacaoFinal) {
+			this.numeros[0] = this.resultado;
+		} else {
+			this.historico = String.format("%s %s %s =", formatarNumero(this.numeros[0]), this.operacaoAtual, formatarNumero(this.numeros[1]));
+			this.numAtual = 0;
+		}
+		this.numeroDigitado = this.formatarNumero(this.resultado);
 		System.out.printf("O resultado é %f", this.resultado);
 	}
 	
 	public void converterEmPorcento() {
 		double stringEmDouble = Double.parseDouble(this.numeroDigitado);
-		double numeroAnterior = this.resultado;
-		if (numeroAnterior == 0) {
+		if (this.numAtual == 0) {
 			this.numeroDigitado = "0";
 			return;
 		}
+		double numeroAnterior = this.numeros[0];
 		double porcentagem = stringEmDouble / 100;
 		this.numeroDigitado = this.formatarNumero(numeroAnterior * porcentagem);
 	}
@@ -86,13 +107,13 @@ public class Calculadora {
 	}
 	
 	public void digitarNaTela(String valor) {
-		if(!numeroDigitado.contains(".") || this.eNumero(valor)) {
-			if(numeroDigitado.equals("0") || !this.podeDigitar) {
-				numeroDigitado = valor;
-				if (!this.podeDigitar) this.podeDigitar = !this.podeDigitar;
+		if(!this.numeroDigitado.contains(".") || this.eNumero(valor)) {
+			if(this.numeroDigitado.equals("0") && !valor.equals(".") || !this.podeDigitar) {
+				this.numeroDigitado = valor;
+				this.podeDigitar = true;
 				return;
 			}
-			numeroDigitado += valor;
+			this.numeroDigitado += valor;
 		}
 		System.out.println(numeroDigitado);
 	}
@@ -108,19 +129,23 @@ public class Calculadora {
 	
 	public void limpar(boolean tudo) {
 		if(tudo) {
-			resultado = 0;
-			operacaoAtual = "";
-			numeros.clear();
+			this.resultado = 0;
+			this.operacaoAtual = "";
+			for (double n : this.numeros) {
+				n = 0;
+			}
+			this.historico = "";
+			this.numAtual = 0;
 		}
-		numeroDigitado = "0";
+		this.numeroDigitado = "0";
 	}
 	
 	public void deletarNumero() {
-		if (numeroDigitado.length() > 0) {
-			numeroDigitado = numeroDigitado.substring(0, numeroDigitado.length() - 1);
+		if (this.numeroDigitado.length() > 0) {
+			this.numeroDigitado = this.numeroDigitado.substring(0, this.numeroDigitado.length() - 1);
 		}
-		if (numeroDigitado.isEmpty()) {
-			numeroDigitado = "0";
+		if (this.numeroDigitado.isEmpty() || !this.eNumero(this.numeroDigitado)) {
+			this.numeroDigitado = "0";
 		}
 	}
 	
@@ -135,6 +160,22 @@ public class Calculadora {
 	}
 	
 	public String getNumeroDigitado() {
-		return numeroDigitado;
+		return this.numeroDigitado;
+	}
+	
+	public String getPrimeiroNum() {
+		return formatarNumero(this.numeros[0]);
+	}
+	
+	public String getHistorico() {
+		return this.historico;
+	}
+	
+	public boolean getDivPorZero() {
+		return divisaoPorZero;
+	}
+	
+	public void setDivPorZero(boolean valor) {
+		this.divisaoPorZero = valor;
 	}
 }
