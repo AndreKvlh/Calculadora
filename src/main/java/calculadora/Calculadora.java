@@ -1,4 +1,4 @@
-package main.calculadora;
+package calculadora;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;

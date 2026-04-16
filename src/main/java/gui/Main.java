@@ -1,4 +1,4 @@
-package main.gui;
+package gui;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
@@ -14,7 +14,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import main.calculadora.Calculadora;
+import calculadora.Calculadora;
 
 public class Main extends Application {
 	Calculadora calculadora = new Calculadora();
