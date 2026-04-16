@@ -14,7 +14,7 @@ Esta é uma recriação da calculadora padrão do Windows feito em Java, usando 
 2. Após a mensagem BUILD SUCCESS, digite:
 `mvn exec:java -Dexec.mainClass="gui.AppLauncher"`
 
-## JavaC
+### JavaC
 
 1. No Prompt de Comando/PowerShell/Bash, no diretório do projeto, digite:
 `javac --module-path "Y:\Bruxarias do Java\JavaLibs\javafx-sdk-21.0.10\lib" --add-modules javafx.controls,javafx.fxml -d target/classes src/main/java/calculadora/*.java src/main/java/gui/*.java`
